@@ -42,7 +42,7 @@ export class View {
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
         this.setRenderSize();
         document.body.appendChild( this.renderer.domElement );
-        window.addEventListener("resize", this.setRenderSize);
+        window.addEventListener("resize", ()=>{this.setRenderSize()});
 
         this.fps = 60;
         this.last_frame = -1;
