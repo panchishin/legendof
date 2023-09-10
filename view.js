@@ -90,6 +90,7 @@ export class View {
         if (frame != this.last_frame && this.ready) {
             let updated = false;
 
+            // move player and camera
             const playerYX = this.model.getPlayerYX();
             if (playerYX[0] != this.prevPlayerYX.y || playerYX[1] != this.prevPlayerYX.x) {
                 [this.camera.position.y, this.camera.position.x] = [playerYX[0]*size, playerYX[1]*size];
@@ -97,6 +98,7 @@ export class View {
                 updated = true;
             }
 
+            // do keyframe animations
             for (let i of Object.keys(this.animations)) {
                 const [animation, timeStep] = this.animations[i];
                 const step = Math.floor(frame / timeStep) % animation.length;

@@ -1,5 +1,7 @@
 'use strict';
 
+import { Action } from './model.js';
+
 export class Control {
     constructor() {
     }
@@ -7,17 +9,22 @@ export class Control {
     setModel(model) {
         this.model = model;
         let actions = {
-            'ArrowLeft' :  { desc : 'left' ,  funct : ()=>{ this.model.movePlayerYX( 0,-1) } },
-            'ArrowRight' : { desc : 'right' , funct : ()=>{ this.model.movePlayerYX( 0, 1) } },
-            'ArrowUp' :    { desc : 'up' ,    funct : ()=>{ this.model.movePlayerYX( 1, 0) } },
-            'ArrowDown' :  { desc : 'down' ,  funct : ()=>{ this.model.movePlayerYX(-1, 0) } }
+            'ArrowLeft' :  Action.MoveEast,
+            'ArrowRight' : Action.MoveWest,
+            'ArrowUp' :    Action.MoveNorth,
+            'ArrowDown' :  Action.MoveSouth,
         };
         this.actions = actions;
 
         document.onkeydown = (e) => {
-            console.log(e.code);
             if (e.code in actions) {
-                this.actions[e.code].funct();
+                model.setPlayerAction(this.actions[e.code]);
+            }
+        };
+
+        document.onkeyup = (e) => {
+            if (e.code in actions) {
+                model.unsetPlayerAction(this.actions[e.code]);
             }
         };
 
