@@ -59,26 +59,33 @@ export class View {
             15: [[15, 16, 17, 18], 10],
             22: [[22, 23], 80]
         };
+
+        this.playerMesh = null;
     }
 
     setModel(model){
         this.model = model;
 
-        for (let x=0; x<12; x++) {
+        const playerYX = this.model.getPlayerYX();
+        const geometry = new THREE.PlaneGeometry( size, size );
+        for (let x=0; x<15; x++) {
             for (let y=0; y<12; y++) {
-                const geometry = new THREE.PlaneGeometry( size, size );
-                const imageIndex = this.model.tilemap[y][x];
+                const imageIndex = this.model.getTilemapYX(y,x);
                 const material = new THREE.MeshBasicMaterial( { map: this.textures[imageIndex] } );
                 let mesh = new THREE.Mesh( geometry, material );
                 mesh.position.set(x*size,y*size,0);
                 this.scene.add( mesh );
             }
         }
+        const playerMaterial = new THREE.MeshBasicMaterial( { map: this.textures[8] } )
+        this.playerMesh = new THREE.Mesh(geometry, playerMaterial)
+        this.playerMesh.position.set(playerYX[1]*size, playerYX[0]*size, 0)
+        this.scene.add( this.playerMesh );
         this.ready = true;
         return this;
     }
 
-    render() {
+    render(force) {
         const frame = Math.floor(this.clock.getElapsedTime() * this.fps);
         if (frame != this.last_frame && this.ready) {
             let updated = false;
@@ -86,6 +93,7 @@ export class View {
             const playerYX = this.model.getPlayerYX();
             if (playerYX[0] != this.prevPlayerYX.y || playerYX[1] != this.prevPlayerYX.x) {
                 [this.camera.position.y, this.camera.position.x] = [playerYX[0]*size, playerYX[1]*size];
+                this.playerMesh.position.set(playerYX[1]*size, playerYX[0]*size, 0)
                 updated = true;
             }
 
@@ -97,7 +105,8 @@ export class View {
                 const imageIndex = animation[step];
                 [this.textures[i].offset.y, this.textures[i].offset.x] = this.getTextureOffset(imageIndex);
             }
-            if (updated) { 
+
+            if (force || updated) { 
                 this.renderer.render( this.scene, this.camera );
                 this.last_frame = frame;
                 this.dirty = false;
