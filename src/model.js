@@ -1,7 +1,7 @@
 'use strict';
 
 const animationFrames = 32;
-const maxFrameMove = 6;
+const maxFrameMove = 8;
 
 export class Action {
     static StandStill = 0;
@@ -46,7 +46,7 @@ export class Model {
     }
 
     setPlayerAction(action) {
-        this._playerAction = action; // this._playerAction | action;
+        this._playerAction |= action; // this._playerAction | action;
     }
 
     unsetPlayerAction(action) {
