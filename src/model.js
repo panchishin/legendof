@@ -77,7 +77,7 @@ export class Model {
             this._playerSpeed = 1;
             this._timeStep = (this._timeStep + this._playerSpeed);
         } else if (this._timeStep != 0) {
-            if (this._playerPreviousAction == this._playerAction) {
+            if (this._playerPreviousAction == this._playerAction || this._playerAction == Action.StandStill) {
                 this._playerSpeed = Math.min(this._playerSpeed+1, maxFrameMove);
             } else if (this._timeStep + this._playerSpeed * this._playerSpeed / 2 > animationFrames) {
                 this._playerSpeed = Math.max(this._playerSpeed-2, 1);

@@ -81,11 +81,16 @@ export class View {
         this.playerMesh = new THREE.Mesh(geometry, playerMaterial)
         this.playerMesh.position.set(playerYX[1]*size, playerYX[0]*size, 0)
         this.scene.add( this.playerMesh );
+
+        [this.camera.position.y, this.camera.position.x] = [playerYX[0]*size, playerYX[1]*size];
+
         this.ready = true;
+
         return this;
     }
 
     render(force) {
+        const cameraBound = size*2;
         const frame = Math.floor(this.clock.getElapsedTime() * this.fps);
         if (frame != this.last_frame && this.ready) {
             let updated = false;
@@ -93,7 +98,23 @@ export class View {
             // move player and camera
             const playerYX = this.model.getPlayerYX();
             if (playerYX[0] != this.prevPlayerYX.y || playerYX[1] != this.prevPlayerYX.x) {
-                [this.camera.position.y, this.camera.position.x] = [playerYX[0]*size, playerYX[1]*size];
+                const player = [playerYX[0]*size, playerYX[1]*size]
+
+                if (this.camera.position.y > playerYX[0]*size + cameraBound) {
+                    this.camera.position.y = playerYX[0]*size + cameraBound;
+                }
+                if (this.camera.position.y < playerYX[0]*size - cameraBound) {
+                    this.camera.position.y = playerYX[0]*size - cameraBound;
+                }
+
+                if (this.camera.position.x > playerYX[1]*size + cameraBound) {
+                    this.camera.position.x = playerYX[1]*size + cameraBound;
+                }
+                if (this.camera.position.x < playerYX[1]*size - cameraBound) {
+                    this.camera.position.x = playerYX[1]*size - cameraBound;
+                }
+
+                // [this.camera.position.y, this.camera.position.x] = [playerYX[0]*size, playerYX[1]*size];
                 this.playerMesh.position.set(playerYX[1]*size, playerYX[0]*size, 0)
                 updated = true;
             }
