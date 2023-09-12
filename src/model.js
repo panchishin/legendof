@@ -1,6 +1,7 @@
 'use strict';
 
-const animationFrames = 16;
+const animationFrames = 32;
+const maxFrameMove = 6;
 
 export class Action {
     static StandStill = 0;
@@ -32,6 +33,7 @@ export class Model {
         this._playerYX = [5,7];
         this._playerTargetYX = [5,7];
         this._playerAction = Action.StandStill;
+        this._playerPreviousAction = Action.StandStill;
         this._timeStep = 0;
     }
 
@@ -44,15 +46,22 @@ export class Model {
     }
 
     setPlayerAction(action) {
-        this._playerAction = this._playerAction | action;
+        this._playerAction = action; // this._playerAction | action;
     }
 
     unsetPlayerAction(action) {
-        this._playerAction &= ( action ^ Action.ALL );
+        this._playerAction = Action.StandStill; // ( action ^ Action.ALL );
     }
 
     getTilemapYX(y,x) {
         return this._tilemap[y][x];
+    }
+
+    setTarget() {
+        if (this._playerAction & Action.MoveNorth ) { this._playerTargetYX[0] = this._playerYX[0] + 1 };
+        if (this._playerAction & Action.MoveWest )  { this._playerTargetYX[1] = this._playerYX[1] + 1 };
+        if (this._playerAction & Action.MoveSouth ) { this._playerTargetYX[0] = this._playerYX[0] - 1 };
+        if (this._playerAction & Action.MoveEast )  { this._playerTargetYX[1] = this._playerYX[1] - 1 };
     }
 
     advanceTime() {
@@ -63,18 +72,29 @@ export class Model {
 
         // set next target position if there is an action
         if (this._timeStep == 0 && this._playerAction != Action.StandStill) {
-            if (this._playerAction & Action.MoveNorth ) { this._playerTargetYX[0] = this._playerYX[0] + 1 };
-            if (this._playerAction & Action.MoveWest )  { this._playerTargetYX[1] = this._playerYX[1] + 1 };
-            if (this._playerAction & Action.MoveSouth ) { this._playerTargetYX[0] = this._playerYX[0] - 1 };
-            if (this._playerAction & Action.MoveEast )  { this._playerTargetYX[1] = this._playerYX[1] - 1 };
-            this._timeStep = (this._timeStep + 1) % animationFrames;
+            this._playerPreviousAction = this._playerAction;
+            this.setTarget()
+            this._playerSpeed = 1;
+            this._timeStep = (this._timeStep + this._playerSpeed);
         } else if (this._timeStep != 0) {
-            this._timeStep = (this._timeStep + 1) % animationFrames;
+            if (this._playerPreviousAction == this._playerAction) {
+                this._playerSpeed = Math.min(this._playerSpeed+1, maxFrameMove);
+            } else if (this._timeStep + this._playerSpeed * this._playerSpeed / 2 > animationFrames) {
+                this._playerSpeed = Math.max(this._playerSpeed-2, 1);
+            }
+            this._timeStep = (this._timeStep + this._playerSpeed);
+        }
+        if (this._timeStep >= animationFrames) {
+            this._playerYX = [ this._playerTargetYX[0], this._playerTargetYX[1] ];
+            if (this._playerPreviousAction != this._playerAction) {
+                this._playerPreviousAction = this._playerAction;
+                this._timeStep = 0;
+            } else {
+                this._timeStep = this._timeStep % animationFrames;
+            }
+            this.setTarget();
         }
 
-        if (this._timeStep == 0) {
-            this._playerYX = [ this._playerTargetYX[0], this._playerTargetYX[1] ];
-        }
         return true;
     }
 

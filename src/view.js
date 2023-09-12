@@ -52,7 +52,7 @@ export class View {
         document.body.appendChild( this.renderer.domElement );
         window.addEventListener("resize", ()=>{this.setRenderSize()});
 
-        [this.getTextureOffset, this.textures] = this.loadTextures(3, 8, "wucpG7e.png");
+        [this.getTextureOffset, this.textures] = this.loadTextures(3, 8, "./asset/wucpG7e.png");
         this.animations = {
             1: [[1, 2, 3, 4], 10],
             8: [[8, 9, 10, 11], 10],
