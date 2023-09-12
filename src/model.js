@@ -59,9 +59,9 @@ export class Model {
 
     setTarget() {
         if (this._playerAction & Action.MoveNorth ) { this._playerTargetYX[0] = this._playerYX[0] + 1 };
-        if (this._playerAction & Action.MoveWest )  { this._playerTargetYX[1] = this._playerYX[1] + 1 };
+        if (this._playerAction & Action.MoveWest )  { this._playerTargetYX[1] = this._playerYX[1] - 1 };
         if (this._playerAction & Action.MoveSouth ) { this._playerTargetYX[0] = this._playerYX[0] - 1 };
-        if (this._playerAction & Action.MoveEast )  { this._playerTargetYX[1] = this._playerYX[1] - 1 };
+        if (this._playerAction & Action.MoveEast )  { this._playerTargetYX[1] = this._playerYX[1] + 1 };
     }
 
     advanceTime() {
