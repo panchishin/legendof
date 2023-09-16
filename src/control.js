@@ -9,14 +9,15 @@ export class Control {
     setModel(model) {
         this.model = model;
         let actions = {
-            'ArrowLeft' : Action.MoveWest,
-            'ArrowRight' :  Action.MoveEast,
+            'ArrowLeft' :  Action.MoveWest,
+            'ArrowRight' : Action.MoveEast,
             'ArrowUp' :    Action.MoveNorth,
             'ArrowDown' :  Action.MoveSouth,
             'KeyA' : Action.MoveWest,
-            'KeyD' :  Action.MoveEast,
-            'KeyW' :    Action.MoveNorth,
-            'KeyS' :  Action.MoveSouth,
+            'KeyD' : Action.MoveEast,
+            'KeyW' : Action.MoveNorth,
+            'KeyS' : Action.MoveSouth,
+            'KeyT' : Action.ToggleWalkable
         };
         this.actions = actions;
 

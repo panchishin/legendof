@@ -12,6 +12,40 @@ export class Action {
     static ALL = 16 - 1;
 }
 
+export class TileAttribute {
+    static None = 0;
+    static Walkable = 1;
+    static DownForce = 2;
+    static NoNorth = 4;
+    static NoSouth = 8;
+}
+
+const tileAttributes = [
+    TileAttribute.Walkable + TileAttribute.NoSouth,
+    TileAttribute.Walkable + TileAttribute.DownForce,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable + TileAttribute.NoSouth,
+    TileAttribute.Walkable + TileAttribute.NoSouth,
+    TileAttribute.None,
+    TileAttribute.Walkable + TileAttribute.DownForce,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable,
+    TileAttribute.None,
+    TileAttribute.None,
+    TileAttribute.Walkable + TileAttribute.NoNorth,
+    TileAttribute.Walkable + TileAttribute.NoSouth,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable + TileAttribute.NoNorth,
+    TileAttribute.Walkable + TileAttribute.NoNorth,
+    TileAttribute.Walkable,
+    TileAttribute.Walkable
+];
+
 export class Model {
     constructor() {
 
@@ -30,11 +64,12 @@ export class Model {
             [ 21, 20, 20, 20, 20, 20, 20, 21, 19, 20, 20, 21, 21, 21, 21]
         ].reverse();
 
-        this._playerYX = [5,7];
+        this._playerYX = [5,8];
         this._playerTargetYX = [5,7];
         this._playerAction = Action.StandStill;
         this._playerPreviousAction = Action.StandStill;
         this._timeStep = 0;
+        this._playerSpeed = 0;
     }
 
     getPlayerYX() {
@@ -46,44 +81,68 @@ export class Model {
     }
 
     setPlayerAction(action) {
-        this._playerAction |= action; // this._playerAction | action;
+        this._playerAction |= action;
     }
 
     unsetPlayerAction(action) {
-        this._playerAction = Action.StandStill; // ( action ^ Action.ALL );
+        this._playerAction &= (Action.All - action); // Action.StandStill;
     }
 
     getTilemapYX(y,x) {
-        return this._tilemap[y][x];
+        try {
+            return this._tilemap[y][x];
+        } catch (e) {
+            return 0;
+        }
+    }
+    getTileAttribute(y,x) {
+        try {
+            return tileAttributes[this._tilemap[y][x]];
+        } catch (e) {
+            return TileAttribute.None;
+        }
     }
 
     setTarget() {
-        if (this._playerAction & Action.MoveNorth ) { this._playerTargetYX[0] = this._playerYX[0] + 1 };
-        if (this._playerAction & Action.MoveWest )  { this._playerTargetYX[1] = this._playerYX[1] - 1 };
-        if (this._playerAction & Action.MoveSouth ) { this._playerTargetYX[0] = this._playerYX[0] - 1 };
-        if (this._playerAction & Action.MoveEast )  { this._playerTargetYX[1] = this._playerYX[1] + 1 };
+        const target = [...this._playerYX];
+        const currentTileAttribute = this.getTileAttribute(...this._playerYX);
+        if ((this._playerAction & Action.MoveNorth) && ((currentTileAttribute & TileAttribute.NoNorth) != TileAttribute.NoNorth)) { target[0] = this._playerYX[0] + 1 };
+        if (this._playerAction & Action.MoveWest )  { target[1] = this._playerYX[1] - 1 };
+        if ((this._playerAction & Action.MoveSouth) && ((currentTileAttribute & TileAttribute.NoSouth) != TileAttribute.NoSouth)) { target[0] = this._playerYX[0] - 1 };
+        if (this._playerAction & Action.MoveEast )  { target[1] = this._playerYX[1] + 1 };
+
+        const targetTileAttribute = this.getTileAttribute(...target);
+        if ((targetTileAttribute & TileAttribute.Walkable) == TileAttribute.Walkable) {
+            this._playerTargetYX = target;
+        }
     }
 
     advanceTime() {
         // nothing is happening.  don't increment the timestep
+
+
         if (this._timeStep == 0 && this._playerAction == Action.StandStill) {
-            return true;
+            this._playerAction = (this.getTileAttribute(...this._playerYX) & TileAttribute.DownForce) == TileAttribute.DownForce ? Action.MoveSouth : Action.StandStill;
+            if (this._playerAction == Action.StandStill) {
+                return true;
+            }
         }
 
         // set next target position if there is an action
         if (this._timeStep == 0 && this._playerAction != Action.StandStill) {
             this._playerPreviousAction = this._playerAction;
             this.setTarget()
-            this._playerSpeed = 1;
+            this._playerSpeed = Math.max(1, this._playerSpeed);
             this._timeStep = (this._timeStep + this._playerSpeed);
         } else if (this._timeStep != 0) {
-            if (this._playerPreviousAction == this._playerAction || this._playerAction == Action.StandStill) {
+            if ((this._playerPreviousAction & this._playerAction) > 0 || this._playerAction == Action.StandStill) {
                 this._playerSpeed = Math.min(this._playerSpeed+1, maxFrameMove);
             } else if (this._timeStep + this._playerSpeed * this._playerSpeed / 2 > animationFrames) {
                 this._playerSpeed = Math.max(this._playerSpeed-2, 1);
             }
             this._timeStep = (this._timeStep + this._playerSpeed);
         }
+        
         if (this._timeStep >= animationFrames) {
             this._playerYX = [ this._playerTargetYX[0], this._playerTargetYX[1] ];
             if (this._playerPreviousAction != this._playerAction) {
