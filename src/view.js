@@ -1,5 +1,61 @@
 'use strict';
 
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+
+const OldScreenShader = {
+
+	uniforms: {
+
+		'tDiffuse': { value: null }
+
+	},
+
+	vertexShader: /* glsl */`
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vUv = uv;
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+		}`,
+
+	fragmentShader: /* glsl */`
+
+		#include <common>
+
+		uniform sampler2D tDiffuse;
+
+		varying vec2 vUv;
+
+		void main() {
+            vec2 uv = vUv - 0.5;
+            vec2 distort;
+            distort.x = cos(uv.y);
+            distort.y = cos(uv.x);
+            uv /= distort;
+            if ((abs(uv.x) > 0.51) || (abs(uv.y) > 0.51)) {
+                gl_FragColor = vec4( vec3(0.005),1.0 );    
+
+            } else {
+                uv += 0.5;
+                vec4 texel = texture2D( tDiffuse, vec2(uv.x,uv.y) );
+                texel += round(fract(uv.y*50.0))*0.003;
+                gl_FragColor = texel;
+            }
+
+		}`
+
+};
+
 const size = 16;
 
 export class View {
@@ -48,6 +104,7 @@ export class View {
         this.scene = new THREE.Scene();
         this.clock = new THREE.Clock();
         this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+
         this.setRenderSize();
         document.body.appendChild( this.renderer.domElement );
         window.addEventListener("resize", ()=>{this.setRenderSize()});
@@ -85,6 +142,20 @@ export class View {
         [this.camera.position.y, this.camera.position.x] = [playerYX[0]*size, playerYX[1]*size];
 
         this.ready = true;
+
+        this.composer = new EffectComposer( this.renderer );
+
+        const renderPass = new RenderPass( this.scene, this.camera );
+        this.composer.addPass( renderPass );
+
+        const luminosityPass = new ShaderPass( OldScreenShader );
+        this.composer.addPass( luminosityPass );
+
+        // const glitchPass = new GlitchPass();
+        // this.composer.addPass( glitchPass );
+
+        const outputPass = new OutputPass();
+        this.composer.addPass( outputPass );
 
         return this;
     }
@@ -129,8 +200,9 @@ export class View {
                 [this.textures[i].offset.y, this.textures[i].offset.x] = this.getTextureOffset(imageIndex);
             }
 
-            if (force || updated) { 
-                this.renderer.render( this.scene, this.camera );
+            if (force || updated) {
+                this.composer.render();
+                // this.renderer.render( this.scene, this.camera );
                 this.last_frame = frame;
                 this.dirty = false;
             }

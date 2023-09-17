@@ -64,7 +64,7 @@ export class Model {
             [ 21, 20, 20, 20, 20, 20, 20, 21, 19, 20, 20, 21, 21, 21, 21]
         ].reverse();
 
-        this._playerYX = [5,8];
+        this._playerYX = [3,7];
         this._playerTargetYX = [5,7];
         this._playerAction = Action.StandStill;
         this._playerPreviousAction = Action.StandStill;
