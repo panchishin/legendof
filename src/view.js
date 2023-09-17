@@ -3,10 +3,8 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 const OldScreenShader = {
 
@@ -32,18 +30,18 @@ const OldScreenShader = {
 
 		#include <common>
 
-		uniform sampler2D tDiffuse;
+        uniform sampler2D tDiffuse;
 
 		varying vec2 vUv;
 
 		void main() {
             vec2 uv = vUv - 0.5;
             vec2 distort;
-            distort.x = cos(uv.y);
-            distort.y = cos(uv.x);
+            distort.x = cos(uv.y*0.8);
+            distort.y = cos(uv.x*0.8);
             uv /= distort;
-            if ((abs(uv.x) > 0.51) || (abs(uv.y) > 0.51)) {
-                gl_FragColor = vec4( vec3(0.005),1.0 );    
+            if ((abs(uv.x) > 0.5) || (abs(uv.y) > 0.5)) {
+                gl_FragColor = vec4( vec3(0.01),1.0 );    
 
             } else {
                 uv += 0.5;
@@ -143,19 +141,10 @@ export class View {
 
         this.ready = true;
 
-        this.composer = new EffectComposer( this.renderer );
-
-        const renderPass = new RenderPass( this.scene, this.camera );
-        this.composer.addPass( renderPass );
-
-        const luminosityPass = new ShaderPass( OldScreenShader );
-        this.composer.addPass( luminosityPass );
-
-        // const glitchPass = new GlitchPass();
-        // this.composer.addPass( glitchPass );
-
-        const outputPass = new OutputPass();
-        this.composer.addPass( outputPass );
+        this.composer = new EffectComposer( this.renderer )
+        this.composer.addPass( new RenderPass( this.scene, this.camera ) );
+        this.composer.addPass( new ShaderPass( OldScreenShader ) );
+        this.composer.addPass( new OutputPass() );
 
         return this;
     }
