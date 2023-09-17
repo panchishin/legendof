@@ -191,7 +191,6 @@ export class View {
 
             if (force || updated) {
                 this.composer.render();
-                // this.renderer.render( this.scene, this.camera );
                 this.last_frame = frame;
                 this.dirty = false;
             }
