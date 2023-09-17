@@ -120,9 +120,10 @@ export class Model {
     advanceTime() {
         // nothing is happening.  don't increment the timestep
 
-
+        let downForce = false;
         if (this._timeStep == 0 && this._playerAction == Action.StandStill) {
-            this._playerAction = (this.getTileAttribute(...this._playerYX) & TileAttribute.DownForce) == TileAttribute.DownForce ? Action.MoveSouth : Action.StandStill;
+            downForce = (this.getTileAttribute(...this._playerYX) & TileAttribute.DownForce) == TileAttribute.DownForce;
+            this._playerAction = downForce ? Action.MoveSouth : Action.StandStill;
             if (this._playerAction == Action.StandStill) {
                 return true;
             }
@@ -153,6 +154,8 @@ export class Model {
             }
             this.setTarget();
         }
+
+        this._playerAction = downForce ? Action.StandStill : this._playerAction;
 
         return true;
     }
