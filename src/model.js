@@ -12,39 +12,40 @@ export class Action {
     static ALL = 16 - 1;
 }
 
-export class TileAttribute {
+class TileAttribute {
     static None = 0;
     static Walkable = 1;
     static DownForce = 2;
     static NoNorth = 4;
     static NoSouth = 8;
+    static ReservedAnimation = 0;
 }
 
 const tileAttributes = [
-    TileAttribute.Walkable + TileAttribute.NoSouth, // 0 rock top left
-    TileAttribute.Walkable + TileAttribute.DownForce, // 1 animated top waterfall
-    TileAttribute.None, // used for animation
-    TileAttribute.None, // used for animation
-    TileAttribute.None, // used for animation
-    TileAttribute.Walkable + TileAttribute.NoSouth, // 5 rock top right
-    TileAttribute.Walkable + TileAttribute.NoSouth, // 6 rock top middle
-    TileAttribute.None, // 7 rock
-    TileAttribute.Walkable + TileAttribute.DownForce, // 8 animated waterfall
-    TileAttribute.None, // used for animation
-    TileAttribute.None, // used for animation
-    TileAttribute.None, // used for animation
-    TileAttribute.None, // 12 rock
-    TileAttribute.None, // 13 rock
-    TileAttribute.Walkable + TileAttribute.NoNorth, // 14 rock bottom right
-    TileAttribute.Walkable + TileAttribute.NoSouth, // 15 animated waterfall bottom
-    TileAttribute.None, // used for animation
-    TileAttribute.None, // used for animation
-    TileAttribute.None, // used for animation
-    TileAttribute.Walkable + TileAttribute.NoNorth, // 19 rock bottom left
-    TileAttribute.Walkable + TileAttribute.NoNorth, // 20 rock bottom middle
-    TileAttribute.Walkable, // 21 wall
-    TileAttribute.Walkable,  // 22 animated wall
-    TileAttribute.None // used for animation
+    TileAttribute.Walkable + TileAttribute.NoSouth,   //  0 rock top left
+    TileAttribute.Walkable + TileAttribute.DownForce, //  1 animated top waterfall
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.Walkable + TileAttribute.NoSouth,   //  5 rock top right
+    TileAttribute.Walkable + TileAttribute.NoSouth,   //  6 rock top middle
+    TileAttribute.None,                               //  7 rock
+    TileAttribute.Walkable + TileAttribute.DownForce, //  8 animated waterfall
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.None,                               // 12 rock
+    TileAttribute.None,                               // 13 rock
+    TileAttribute.Walkable + TileAttribute.NoNorth,   // 14 rock bottom right
+    TileAttribute.Walkable + TileAttribute.NoSouth,   // 15 animated waterfall bottom
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.ReservedAnimation,                  //    used for waterfall animation
+    TileAttribute.Walkable + TileAttribute.NoNorth,   // 19 rock bottom left
+    TileAttribute.Walkable + TileAttribute.NoNorth,   // 20 rock bottom middle
+    TileAttribute.Walkable,                           // 21 wall
+    TileAttribute.Walkable,                           // 22 animated wall
+    TileAttribute.ReservedAnimation                   //    used for wall animation
 ];
 
 export class Model {
