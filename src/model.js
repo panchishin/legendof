@@ -68,6 +68,7 @@ export class Model {
         this._playerYX = [3,7];
         this._playerTargetYX = [5,7];
         this._playerAction = Action.StandStill;
+        this._instantPlayerAction = Action.StandStill;
         this._playerPreviousAction = Action.StandStill;
         this._timeStep = 0;
         this._playerSpeed = 0;
@@ -83,10 +84,11 @@ export class Model {
 
     setPlayerAction(action) {
         this._playerAction |= action;
+        this._instantPlayerAction = this._playerAction;
     }
 
     unsetPlayerAction(action) {
-        this._playerAction &= (Action.All - action); // Action.StandStill;
+        this._playerAction &= (Action.All - action);
     }
 
     getTilemapYX(y,x) {
@@ -104,13 +106,13 @@ export class Model {
         }
     }
 
-    setTarget() {
+    setTarget(action) {
         const target = [...this._playerYX];
         const currentTileAttribute = this.getTileAttribute(...this._playerYX);
-        if ((this._playerAction & Action.MoveNorth) && ((currentTileAttribute & TileAttribute.NoNorth) != TileAttribute.NoNorth)) { target[0] = this._playerYX[0] + 1 };
-        if (this._playerAction & Action.MoveWest )  { target[1] = this._playerYX[1] - 1 };
-        if ((this._playerAction & Action.MoveSouth) && ((currentTileAttribute & TileAttribute.NoSouth) != TileAttribute.NoSouth)) { target[0] = this._playerYX[0] - 1 };
-        if (this._playerAction & Action.MoveEast )  { target[1] = this._playerYX[1] + 1 };
+        if ((action & Action.MoveNorth) && ((currentTileAttribute & TileAttribute.NoNorth) != TileAttribute.NoNorth)) { target[0] = this._playerYX[0] + 1 };
+        if (action & Action.MoveWest )  { target[1] = this._playerYX[1] - 1 };
+        if ((action & Action.MoveSouth) && ((currentTileAttribute & TileAttribute.NoSouth) != TileAttribute.NoSouth)) { target[0] = this._playerYX[0] - 1 };
+        if (action & Action.MoveEast )  { target[1] = this._playerYX[1] + 1 };
 
         const targetTileAttribute = this.getTileAttribute(...target);
         if ((targetTileAttribute & TileAttribute.Walkable) == TileAttribute.Walkable) {
@@ -119,25 +121,27 @@ export class Model {
     }
 
     advanceTime() {
-        // nothing is happening.  don't increment the timestep
+        let playerAction = this._instantPlayerAction == Action.StandStill ? this._playerAction : this._instantPlayerAction;
+        this._instantPlayerAction = Action.StandStill;
 
         let downForce = false;
-        if (this._timeStep == 0 && this._playerAction == Action.StandStill) {
+        if (this._timeStep == 0 && playerAction == Action.StandStill) {
             downForce = (this.getTileAttribute(...this._playerYX) & TileAttribute.DownForce) == TileAttribute.DownForce;
-            this._playerAction = downForce ? Action.MoveSouth : Action.StandStill;
-            if (this._playerAction == Action.StandStill) {
+            playerAction = downForce ? Action.MoveSouth : Action.StandStill;
+            if (playerAction == Action.StandStill) {
                 return true;
             }
         }
 
         // set next target position if there is an action
-        if (this._timeStep == 0 && this._playerAction != Action.StandStill) {
-            this._playerPreviousAction = this._playerAction;
-            this.setTarget()
-            this._playerSpeed = Math.max(1, this._playerSpeed);
+        if (this._timeStep < 5 && playerAction != Action.StandStill) {
+            this._playerPreviousAction = playerAction;
+            this.setTarget(playerAction)
+            this._playerSpeed = Math.max(this._playerSpeed, this._timeStep+1);
             this._timeStep = (this._timeStep + this._playerSpeed);
+
         } else if (this._timeStep != 0) {
-            if ((this._playerPreviousAction & this._playerAction) > 0 || this._playerAction == Action.StandStill) {
+            if ((this._playerPreviousAction & playerAction) > 0 || (playerAction == Action.StandStill && this._playerSpeed < 4 )) {
                 this._playerSpeed = Math.min(this._playerSpeed+1, maxFrameMove);
             } else if (this._timeStep + this._playerSpeed * this._playerSpeed / 2 > animationFrames) {
                 this._playerSpeed = Math.max(this._playerSpeed-2, 1);
@@ -147,16 +151,16 @@ export class Model {
         
         if (this._timeStep >= animationFrames) {
             this._playerYX = [ this._playerTargetYX[0], this._playerTargetYX[1] ];
-            if (this._playerPreviousAction != this._playerAction) {
-                this._playerPreviousAction = this._playerAction;
+            if (this._playerPreviousAction != playerAction) {
+                this._playerPreviousAction = playerAction;
                 this._timeStep = 0;
             } else {
                 this._timeStep = this._timeStep % animationFrames;
             }
-            this.setTarget();
+            this.setTarget(playerAction);
         }
 
-        this._playerAction = downForce ? Action.StandStill : this._playerAction;
+        this._playerAction = downForce ? Action.StandStill : playerAction;
 
         return true;
     }
