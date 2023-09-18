@@ -16,8 +16,7 @@ export class Control {
             'KeyA' : Action.MoveWest,
             'KeyD' : Action.MoveEast,
             'KeyW' : Action.MoveNorth,
-            'KeyS' : Action.MoveSouth,
-            'KeyT' : Action.ToggleWalkable
+            'KeyS' : Action.MoveSouth
         };
         this.actions = actions;
 
