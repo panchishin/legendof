@@ -76,8 +76,8 @@ export class View {
 
         const playerYX = this.model.getPlayerYX();
         const geometry = new THREE.PlaneGeometry( size, size );
-        for (let x=0; x<15; x++) {
-            for (let y=0; y<12; y++) {
+        for (let x=0; x<=15; x++) {
+            for (let y=0; y<=15; y++) {
                 const imageIndex = this.model.getTilemapYX(y,x);
                 const material = new THREE.MeshBasicMaterial( { map: this.textures[imageIndex] } );
                 let mesh = new THREE.Mesh( geometry, material );
